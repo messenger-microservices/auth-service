@@ -2,7 +2,7 @@ package ru.pulsarmn.messenger.auth.jwt;
 
 import org.springframework.stereotype.Component;
 import ru.pulsarmn.messenger.auth.domain.AuthUser;
-import ru.pulsarmn.messenger.auth.dto.TokenPairResponse;
+import ru.pulsarmn.messenger.auth.dto.response.TokenPairResponse;
 
 
 @Component

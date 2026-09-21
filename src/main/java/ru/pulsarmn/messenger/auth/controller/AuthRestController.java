@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.pulsarmn.messenger.auth.dto.AuthenticationRequest;
-import ru.pulsarmn.messenger.auth.dto.RefreshTokenRequest;
-import ru.pulsarmn.messenger.auth.dto.RegistrationRequest;
-import ru.pulsarmn.messenger.auth.dto.TokenPairResponse;
+import ru.pulsarmn.messenger.auth.dto.request.AuthenticationRequest;
+import ru.pulsarmn.messenger.auth.dto.request.RefreshTokenRequest;
+import ru.pulsarmn.messenger.auth.dto.request.RegistrationRequest;
+import ru.pulsarmn.messenger.auth.dto.response.TokenPairResponse;
 import ru.pulsarmn.messenger.auth.service.AuthService;
 
 
