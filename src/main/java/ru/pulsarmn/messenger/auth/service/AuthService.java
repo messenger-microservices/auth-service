@@ -9,8 +9,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
+import ru.pulsarmn.messenger.auth.jwt.TokenPairFactory;
 import ru.pulsarmn.messenger.auth.domain.AuthUser;
 import ru.pulsarmn.messenger.auth.dto.RegistrationRequest;
+import ru.pulsarmn.messenger.auth.dto.TokenPairResponse;
 import ru.pulsarmn.messenger.auth.dto.UserCreateRequest;
 import ru.pulsarmn.messenger.auth.exception.BadCredentialsException;
 import ru.pulsarmn.messenger.auth.exception.RegistrationException;
@@ -27,18 +29,20 @@ public class AuthService {
     private final RestClient userServiceRestClient;
     private final AuthUserRepository authUserRepository;
     private final TransactionTemplate transactionTemplate;
+    private final TokenPairFactory tokenPairFactory;
 
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    public AuthService(AuthUserMapper authUserMapper, PasswordEncoder passwordEncoder, RestClient userServiceRestClient, AuthUserRepository authUserRepository, TransactionTemplate transactionTemplate) {
+    public AuthService(AuthUserMapper authUserMapper, PasswordEncoder passwordEncoder, RestClient userServiceRestClient, AuthUserRepository authUserRepository, TransactionTemplate transactionTemplate, TokenPairFactory tokenPairFactory) {
         this.authUserMapper = authUserMapper;
         this.passwordEncoder = passwordEncoder;
         this.userServiceRestClient = userServiceRestClient;
         this.authUserRepository = authUserRepository;
         this.transactionTemplate = transactionTemplate;
+        this.tokenPairFactory = tokenPairFactory;
     }
 
-    public void register(RegistrationRequest request) {
+    public TokenPairResponse register(RegistrationRequest request) {
         validatePasswordsMatch(request);
 
         AuthUser authUser = mapToAuthUser(request);
@@ -59,6 +63,7 @@ public class AuthService {
             compensateRegistration(authUser);
             throw new ServiceUnavailableException("User service is unavailable");
         }
+        return tokenPairFactory.createTokenPair(savedAuthUser);
     }
 
     private void compensateRegistration(AuthUser authUser) {
