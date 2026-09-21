@@ -1,5 +1,6 @@
 package ru.pulsarmn.messenger.auth.controller;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -7,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.pulsarmn.messenger.auth.dto.RegistrationRequest;
+import ru.pulsarmn.messenger.auth.dto.TokenPairResponse;
 import ru.pulsarmn.messenger.auth.service.AuthService;
 
 
@@ -21,8 +23,8 @@ public class AuthRestController {
     }
 
     @PostMapping("/register")
-    ResponseEntity<Void> register(@Validated @RequestBody RegistrationRequest request) {
-        authService.register(request);
-        return ResponseEntity.ok().build();
+    ResponseEntity<@NonNull TokenPairResponse> register(@Validated @RequestBody RegistrationRequest request) {
+        TokenPairResponse response = authService.register(request);
+        return ResponseEntity.ok(response);
     }
 }
