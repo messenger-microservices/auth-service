@@ -4,8 +4,11 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import ru.pulsarmn.messenger.auth.domain.RefreshToken;
 
+import java.util.Optional;
 import java.util.UUID;
 
 
 public interface RefreshTokenRepository extends JpaRepository<@NonNull RefreshToken, @NonNull UUID> {
+
+    Optional<RefreshToken> findByTokenHash(String tokenHash);
 }
