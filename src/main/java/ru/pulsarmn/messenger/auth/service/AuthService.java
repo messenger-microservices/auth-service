@@ -9,12 +9,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
-import ru.pulsarmn.messenger.auth.dto.AuthenticationRequest;
+import ru.pulsarmn.messenger.auth.domain.RefreshToken;
+import ru.pulsarmn.messenger.auth.dto.*;
 import ru.pulsarmn.messenger.auth.jwt.TokenPairFactory;
 import ru.pulsarmn.messenger.auth.domain.AuthUser;
-import ru.pulsarmn.messenger.auth.dto.RegistrationRequest;
-import ru.pulsarmn.messenger.auth.dto.TokenPairResponse;
-import ru.pulsarmn.messenger.auth.dto.UserCreateRequest;
 import ru.pulsarmn.messenger.auth.exception.BadCredentialsException;
 import ru.pulsarmn.messenger.auth.exception.RegistrationException;
 import ru.pulsarmn.messenger.auth.exception.ServiceUnavailableException;
@@ -31,16 +29,18 @@ public class AuthService {
     private final AuthUserRepository authUserRepository;
     private final TransactionTemplate transactionTemplate;
     private final TokenPairFactory tokenPairFactory;
+    private final RefreshTokenService refreshTokenService;
 
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    public AuthService(AuthUserMapper authUserMapper, PasswordEncoder passwordEncoder, RestClient userServiceRestClient, AuthUserRepository authUserRepository, TransactionTemplate transactionTemplate, TokenPairFactory tokenPairFactory) {
+    public AuthService(AuthUserMapper authUserMapper, PasswordEncoder passwordEncoder, RestClient userServiceRestClient, AuthUserRepository authUserRepository, TransactionTemplate transactionTemplate, TokenPairFactory tokenPairFactory, RefreshTokenService refreshTokenService) {
         this.authUserMapper = authUserMapper;
         this.passwordEncoder = passwordEncoder;
         this.userServiceRestClient = userServiceRestClient;
         this.authUserRepository = authUserRepository;
         this.transactionTemplate = transactionTemplate;
         this.tokenPairFactory = tokenPairFactory;
+        this.refreshTokenService = refreshTokenService;
     }
 
     public TokenPairResponse register(RegistrationRequest request) {
@@ -101,5 +101,22 @@ public class AuthService {
             throw new BadCredentialsException("Invalid username or password");
         }
         return tokenPairFactory.createTokenPair(authUser);
+    }
+
+    public TokenPairResponse refresh(RefreshTokenRequest request) {
+        RefreshToken refreshToken = refreshTokenService.find(request.oldRefreshToken());
+        checkRefreshTokenExpiration(refreshToken);
+
+        refreshTokenService.delete(refreshToken);
+        return authUserRepository.findById(refreshToken.getAuthUser().getId())
+                .map(tokenPairFactory::createTokenPair)
+                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
+    }
+
+    private void checkRefreshTokenExpiration(RefreshToken refreshToken) {
+        if (refreshTokenService.isExpired(refreshToken)) {
+            log.warn("An attempt to refresh the access token using an expired refresh token");
+            throw new BadCredentialsException("Invalid refresh token");
+        }
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.pulsarmn.messenger.auth.dto.AuthenticationRequest;
+import ru.pulsarmn.messenger.auth.dto.RefreshTokenRequest;
 import ru.pulsarmn.messenger.auth.dto.RegistrationRequest;
 import ru.pulsarmn.messenger.auth.dto.TokenPairResponse;
 import ru.pulsarmn.messenger.auth.service.AuthService;
@@ -33,5 +34,11 @@ public class AuthRestController {
     ResponseEntity<@NonNull TokenPairResponse> login(@Validated @RequestBody AuthenticationRequest request) {
         TokenPairResponse authenticate = authService.authenticate(request);
         return ResponseEntity.ok(authenticate);
+    }
+
+    @PostMapping("/refresh")
+    ResponseEntity<@NonNull TokenPairResponse> refresh(@Validated @RequestBody RefreshTokenRequest request) {
+        TokenPairResponse response = authService.refresh(request);
+        return ResponseEntity.ok(response);
     }
 }
