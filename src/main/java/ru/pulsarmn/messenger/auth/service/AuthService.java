@@ -9,6 +9,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestClient;
+import ru.pulsarmn.messenger.auth.dto.AuthenticationRequest;
 import ru.pulsarmn.messenger.auth.jwt.TokenPairFactory;
 import ru.pulsarmn.messenger.auth.domain.AuthUser;
 import ru.pulsarmn.messenger.auth.dto.RegistrationRequest;
@@ -87,5 +88,18 @@ public class AuthService {
     private AuthUser mapToAuthUser(RegistrationRequest request) {
         String encodedPassword = passwordEncoder.encode(request.password());
         return authUserMapper.map(request, encodedPassword);
+    }
+
+    public TokenPairResponse authenticate(AuthenticationRequest request) {
+        String username = request.username();
+        AuthUser authUser = authUserRepository.findByUsername(username)
+                .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
+
+        String rawPassword = request.password();
+        String passwordHash = authUser.getPasswordHash();
+        if (!passwordEncoder.matches(rawPassword, passwordHash)) {
+            throw new BadCredentialsException("Invalid username or password");
+        }
+        return tokenPairFactory.createTokenPair(authUser);
     }
 }
