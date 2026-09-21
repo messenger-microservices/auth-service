@@ -5,3 +5,10 @@ spring:
     change-log: classpath:/db/changelog/db.changelog-master.yaml
   jpa:
     open-in-view: false
+
+server:
+  port: 8002
+
+integration:
+  user-service:
+    url: http://localhost:8001
